@@ -21,6 +21,20 @@ Note that the agent:
 
 As it runs, it will log out its progress as it moves through the targeted system. That log output, along with a final report, plus any files retrieved from the server, will be stored in a local `session-{timestamp}` folder (see `example-session/`).
 
+Authentication:
+
+- For local testing, use this line in the agent:
+```
+ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+```
+The `set_missing_host_key_policy` method in Paramiko defines how the SSH client should handle unknown host keys when connecting to a server; `AutoAddPolicy` automatically adds unknown keys.
+
+- If you plan to use the agent against a production server, comment out the previous line and use this instead:
+```
+ssh.load_system_host_keys()
+```
+SSH into the real server manually once first, accept the key, and then this method will load `~/.ssh/known_hosts` automatically.
+
 ---
 
 ## Testing the agent
