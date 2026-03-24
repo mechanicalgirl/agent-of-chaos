@@ -1,4 +1,3 @@
-# Use a base image with SSH installed
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
