@@ -1,0 +1,4 @@
+tried to migrate to new server, got halfway, gave up
+old config backed up somewhere in /opt probably
+cert expired AGAIN - renewed manually, set reminder (lost reminder)
+postfix logs showing weird traffic from 192.168.1.45, ignoring for now

@@ -1,0 +1,85 @@
+{
+  "generated": "2026-03-23T17:52:50-0700",
+  "artifacts": [
+    {
+      "path": "/opt/misc.md-2014.txt",
+      "type": "file",
+      "description": "admin notes from 2014"
+    },
+    {
+      "path": "/tmp/misc-2019.txt",
+      "type": "file",
+      "description": "admin notes from 2019"
+    },
+    {
+      "path": "/etc/dovecot/readme.txt-2009.txt",
+      "type": "file",
+      "description": "admin notes from 2009"
+    },
+    {
+      "path": "memcached",
+      "type": "service",
+      "description": "installed but not running"
+    },
+    {
+      "path": "fail2ban",
+      "type": "service",
+      "description": "installed but not running"
+    },
+    {
+      "path": "ntp",
+      "type": "service",
+      "description": "installed but not running"
+    }
+  ],
+  "misconfigurations": [
+    {
+      "detail": "chmod 000 - unreadable",
+      "type": "permissions",
+      "path": "/etc/dovecot/dovecot.conf"
+    },
+    {
+      "detail": "chmod 000 - unreadable",
+      "type": "permissions",
+      "path": "/etc/postfix/main.cf"
+    },
+    {
+      "detail": "service stopped deliberately",
+      "type": "service",
+      "path": "dovecot"
+    },
+    {
+      "detail": "suspicious cron job phoning home to 203.0.113.45",
+      "type": "cron",
+      "path": "/etc/cron.d/maintenance"
+    },
+    {
+      "detail": "installed and running - reason unknown",
+      "type": "service",
+      "path": "vsftpd"
+    },
+    {
+      "path": "sysstat",
+      "type": "service",
+      "detail": "installed and running - reason unknown"
+    }
+  ],
+  "red_herrings": [
+    {
+      "detail": "empty directory named to look important",
+      "type": "directory",
+      "path": "/root/emergency-restore"
+    },
+    {
+      "detail": "migration directory with no actual content",
+      "type": "directory",
+      "path": "/opt/mail-migration-2019/backup"
+    },
+    {
+      "detail": "hidden file with restrictive permissions",
+      "type": "file",
+      "path": "/etc/postfix/.secret"
+    }
+  ],
+  "chaos_level": "high"
+}

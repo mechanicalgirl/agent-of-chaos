@@ -1,0 +1,4 @@
+upgraded dovecot - took forever, broke twice
+SSL cert expires in 6 months, need to renew
+Dave left the company, nobody knows relay config now
+see /etc/postfix/main.cf line 47 for "temporary" fix (still there)
