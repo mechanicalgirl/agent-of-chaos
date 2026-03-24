@@ -25,6 +25,14 @@ As it runs, it will log out its progress as it moves through the targeted system
 
 ## Testing the agent
 
+Before testing the agent, you'll need:
+
+- an ANTHROPIC_API_KEY
+
+- configured .env
+
+- Docker installed and running locally
+
 To test the agent's accuracy and fine-tune the prompt, I'm using:
 
 - Dockerfiles based on different versions of Ubuntu (one on a current version, and one using Ubuntu 14, the oldest available on Dockerhub)
