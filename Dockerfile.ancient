@@ -42,9 +42,6 @@ RUN chmod +x /setup.sh && /setup.sh $CHAOS_LEVEL
 # SSH port
 EXPOSE 22
 
-# Start SSH service
-# CMD ["/usr/sbin/sshd", "-D"]
-
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 CMD ["/start.sh"]
