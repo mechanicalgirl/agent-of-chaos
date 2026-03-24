@@ -21,3 +21,15 @@ docker stop mail-test
 docker rm mail-test
 
 docker rmi mail-test:latest 
+
+---
+
+./build.sh high       # build and run with high chaos
+uv run chaosagent.py  # run the agent
+
+---
+
+Known agent behavior:
+- Does not exhaustively ls every directory
+- Prioritizes named/config files over empty directories
+- May miss ntp/chrony as "unexpected" running services

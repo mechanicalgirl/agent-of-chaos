@@ -28,6 +28,11 @@ RETRIEVED_DIR = f"{RESULTS_DIR}/retrieved"
 REPORT_FILE = f"{RESULTS_DIR}/report.txt"
 os.makedirs(RETRIEVED_DIR, exist_ok=True)
 
+def log(message):
+    print(message)
+    with open(f"{RESULTS_DIR}/agent.log", "a") as f:
+        f.write(message + "\n")
+
 client = anthropic.Anthropic()
 
 tools = [
@@ -81,14 +86,39 @@ def read_file(ssh, path):
     return stdout.read().decode() or "(no output)"
 
 def retrieve_file(ssh, remote_path):
+    try:
+        sftp = ssh.open_sftp()
+        local_path = f"{RETRIEVED_DIR}{remote_path}"
+        os.makedirs(os.path.dirname(local_path), exist_ok=True)
+        sftp.get(remote_path, local_path)
+        sftp.close()
+        return f"File retrieved to {local_path}"
+    except PermissionError:
+        return f"ERROR: Permission denied reading {remote_path}"
+    except FileNotFoundError:
+        return f"ERROR: File not found: {remote_path}"
+    except Exception as e:
+        return f"ERROR: Could not retrieve {remote_path}: {str(e)}"
+
+def retrieve_manifests(ssh):
+    _, stdout, _ = ssh.exec_command("cat /var/run/manifest_location.txt")
+    manifest_dir = stdout.read().decode().strip()
+    if not manifest_dir:
+        log("WARNING: manifest_location.txt not found, skipping manifest retrieval")
+        return
     sftp = ssh.open_sftp()
-    local_path = f"{RETRIEVED_DIR}{remote_path}"
-    os.makedirs(os.path.dirname(local_path), exist_ok=True)
-    sftp.get(remote_path, local_path)
+    for filename in ["manifest.json", "manifest.txt"]:
+        local_path = f"{RESULTS_DIR}/{filename}"
+        try:
+            sftp.get(f"{manifest_dir}/{filename}", local_path)
+            log(f"Retrieved {filename}")
+        except FileNotFoundError:
+            log(f"WARNING: {filename} not found on server")
     sftp.close()
-    return f"File retrieved to {local_path}"
 
 def run_agent(ssh):
+    retrieve_manifests(ssh)  # grab ground truth before agent starts
+
     messages = [
         {
             "role": "user",
@@ -108,7 +138,7 @@ def run_agent(ssh):
             SECONDARY (high level only):
             - Operating system version and general health
             - Disk usage and available space
-            - Running processes and services (non-mail)
+            - Any running processes and services (include any non-email services, even if they seem benign)
             - Anything that looks concerning or outdated
 
             IMPORTANT: Only run non-interactive commands. Avoid commands that wait for 
@@ -124,7 +154,7 @@ def run_agent(ssh):
     ]
 
     while True:
-        print(f"--- Loop iteration, messages so far: {len(messages)} ---")
+        log(f"--- Loop iteration, messages so far: {len(messages)} ---")
         response = client.messages.create(
             # model="claude-opus-4-5",
             model="claude-haiku-4-5-20251001",
@@ -138,9 +168,10 @@ def run_agent(ssh):
 
         # if claude is done, print the final report and exit
         if response.stop_reason == "end_turn":
+            log("--- Agent finished, generating report ---")
             for block in response.content:
                 if hasattr(block, "text"):
-                    print(block.text)
+                    log(block.text)
                     with open(REPORT_FILE, "w") as f:
                         f.write(block.text)
             break
@@ -149,14 +180,14 @@ def run_agent(ssh):
         tool_results = []
         for block in response.content:
             if block.type == "tool_use":
-                print(f">>> Calling tool: {block.name} with {block.input}")
+                log(f">>> Calling tool: {block.name} with {block.input}")
                 if block.name == "run_command":
                     result = run_command(ssh, block.input["command"])
                 elif block.name == "read_file":
                     result = read_file(ssh, block.input["path"])
                 elif block.name == "retrieve_file":
                     result = retrieve_file(ssh, block.input["path"])
-                print(f"<<< Result: {result[:100]}...")  # just first 100 chars so it's not overwhelming
+                log(f"<<< Result: {result[:100]}...")  # just first 100 chars so it's not overwhelming
                 tool_results.append({
                     "type": "tool_result",
                     "tool_use_id": block.id,
@@ -168,11 +199,11 @@ def run_agent(ssh):
             messages.append({"role": "user", "content": tool_results})
         else:
          if not tool_results:
-            print(f"WARNING: No tool results, stop_reason={response.stop_reason}")
+            log(f"WARNING: No tool results, stop_reason={response.stop_reason}")
             for block in response.content:
-                print(f"  block type: {block.type}")
+                log(f"  block type: {block.type}")
                 if hasattr(block, 'text') and block.text:
-                    print(f"  text: {block.text[:200]}")
+                    log(f"  text: {block.text[:200]}")
                     with open(REPORT_FILE, "w") as f:
                         f.write(block.text + "\n(NOTE: Report may be incomplete)")
             break
@@ -182,9 +213,9 @@ try:
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy()) # For local testing only
     # ssh.load_system_host_keys() # loads ~/.ssh/known_hosts automatically; SSH into the real server manually once first, accept the key
     ssh.connect(ssh_host, port=ssh_port, username=ssh_user, password=ssh_password)
-    print("SSH connection successful")
+    log("SSH connection successful")
 except Exception as e:
-    print(e)
+    log(e)
     sys.exit()
 
 run_agent(ssh) 
