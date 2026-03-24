@@ -1,5 +1,8 @@
 # agent-of-chaos
 
+> [!NOTE]
+> This tool is designed for auditing infrastructure you own or have explicit permission to access.
+
 `chaosagent.py` is an agent designed to crawl a server, document its processes and services, and prepare a report highlighting vulnerabilities and critical issues.
 
 The agent uses only three tools:
