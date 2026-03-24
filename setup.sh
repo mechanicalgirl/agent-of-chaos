@@ -82,7 +82,7 @@ log ""
 # === RANDOM CONTENT POOLS ===
 
 # possible locations to scatter files
-SCATTER_DIRS=("/opt" "/root" "/home/crawler" "/usr/local/share" "/var/lib" "/tmp" "/etc/postfix" "/etc/dovecot")
+SCATTER_DIRS=("/opt" "/home/crawler" "/usr/local/share" "/var/lib" "/tmp" "/etc/postfix" "/etc/dovecot")
 
 # pick a random element from an array
 random_pick() {

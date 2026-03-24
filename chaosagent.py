@@ -17,10 +17,10 @@ import sys
 
 
 load_dotenv()
-ssh_host = os.getenv("SSH_HOST")
-ssh_port = int(os.getenv("SSH_PORT"))
-ssh_user = os.getenv("SSH_USER")
-ssh_password = os.getenv("SSH_PASSWORD")
+SSH_HOST = os.getenv("SSH_HOST")
+SSH_PORT = int(os.getenv("SSH_PORT"))
+SSH_USER = os.getenv("SSH_USER")
+SSH_PASSWORD = os.getenv("SSH_PASSWORD")
 
 SESSION_ID = datetime.now().strftime("%Y%m%d-%H%M%S")
 RESULTS_DIR = f"./session-{SESSION_ID}"
@@ -138,7 +138,8 @@ def run_agent(ssh):
             SECONDARY (high level only):
             - Operating system version and general health
             - Disk usage and available space
-            - Any running processes and services (include any non-email services, even if they seem benign)
+            - Any running processes and services (include any non-email services, even if they seem benign —
+              on a dedicated mail server, every unexpected running service should be documented and its purpose noted)
             - Anything that looks concerning or outdated
 
             IMPORTANT: Only run non-interactive commands. Avoid commands that wait for 
@@ -172,6 +173,8 @@ def run_agent(ssh):
                     log(block.text)
                     with open(REPORT_FILE, "w") as f:
                         f.write(block.text)
+                    with open(".last_session", "w") as fs:
+                        fs.write(RESULTS_DIR)
             break
 
         # otherwise, execute whatever tools the agent asks for
@@ -185,7 +188,7 @@ def run_agent(ssh):
                     result = read_file(ssh, block.input["path"])
                 elif block.name == "retrieve_file":
                     result = retrieve_file(ssh, block.input["path"])
-                log(f"<<< Result: {result[:100]}...")  # just first 100 chars so it's not overwhelming
+                log(f"<<< Result: {result[:100]}...") # truncate for readability
                 tool_results.append({
                     "type": "tool_result",
                     "tool_use_id": block.id,
@@ -210,7 +213,7 @@ try:
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy()) # For local testing only
     # ssh.load_system_host_keys() # loads ~/.ssh/known_hosts automatically; SSH into the real server manually once first, accept the key
-    ssh.connect(ssh_host, port=ssh_port, username=ssh_user, password=ssh_password)
+    ssh.connect(SSH_HOST, port=SSH_PORT, username=SSH_USER, password=SSH_PASSWORD)
     log("SSH connection successful")
 except Exception as e:
     log(e)

@@ -1,6 +1,7 @@
 .env
 .DS_Store
 session-*/
+.last_session
 NOTES.txt
 
 # Byte-compiled / optimized / DLL files
