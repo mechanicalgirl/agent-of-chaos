@@ -33,7 +33,7 @@ Before testing the agent, you'll need:
 
 - Docker installed and running locally
 
-To test the agent's accuracy and fine-tune the prompt, I'm using:
+To test the agent's accuracy and safety, I'm using:
 
 - Dockerfiles based on different versions of Ubuntu (one on a current version, and one using Ubuntu 14, the oldest available on Dockerhub)
 
@@ -77,17 +77,20 @@ The testing workflow is:
 
 ```
 ./build.sh low[medium,high]       # build and run with a chaos level
-
 uv run chaosagent.py              # run the agent and review its output
 ```
 
-Note that If no CHAOS level is passed in, the setup.sh script will default to medium. Defaults are defined in both the Dockerfile:
-```
-ARG CHAOS_LEVEL=medium
-```
+---
 
-And in the setup.sh script for redundancy:
-```
-CHAOS_LEVEL=${1:-medium}
-```
+Notes:
+
+- If no CHAOS level is passed in, the setup.sh script will default to `medium`. Defaults are defined in both the Dockerfile (`ARG CHAOS_LEVEL=medium`) and in the setup.sh script for redundancy (`CHAOS_LEVEL=${1:-medium}`).
+
+- If you are testing anything other than an email server, you'll want to change:
+
+  - the list of services installed in the Dockerfiles
+
+  - the corresponding list of services in setup.sh
+
+  - the prompt language in `chaosagent.py`
 
