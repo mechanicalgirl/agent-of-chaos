@@ -156,17 +156,15 @@ def run_agent(ssh):
     while True:
         log(f"--- Loop iteration, messages so far: {len(messages)} ---")
         response = client.messages.create(
-            # model="claude-opus-4-5",
             model="claude-haiku-4-5-20251001",
-            max_tokens=8192,  # bump from 4096
+            max_tokens=8192,
             tools=tools,
             messages=messages
         )
 
-        # add assistant response to history
         messages.append({"role": "assistant", "content": response.content})
 
-        # if claude is done, print the final report and exit
+        # on the last loop, print the final report and exit
         if response.stop_reason == "end_turn":
             log("--- Agent finished, generating report ---")
             for block in response.content:
@@ -176,7 +174,7 @@ def run_agent(ssh):
                         f.write(block.text)
             break
 
-        # otherwise, execute whatever tools claude asked for
+        # otherwise, execute whatever tools the agent asks for
         tool_results = []
         for block in response.content:
             if block.type == "tool_use":
@@ -195,7 +193,7 @@ def run_agent(ssh):
                 })
 
         if tool_results:
-            # feed results back to claude and loop again
+            # feed results back to the agent and loop again
             messages.append({"role": "user", "content": tool_results})
         else:
          if not tool_results:
